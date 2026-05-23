@@ -1,0 +1,164 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f7f4ef;
+  color: #282522;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.py-3 {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #e7ded4;
+}
+
+.header-content {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  color: #6d3b2f;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.main-nav {
+  display: flex;
+  gap: 20px;
+  color: #4d4740;
+  font-weight: 600;
+}
+
+.hero-section {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  padding: 48px;
+  margin-bottom: 36px;
+  border-radius: 8px;
+  color: #fff;
+  background:
+    linear-gradient(rgba(32, 27, 24, 0.45), rgba(32, 27, 24, 0.45)),
+    url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1500&q=80')
+      center/cover;
+}
+
+.hero-section div {
+  max-width: 560px;
+}
+
+.hero-section h1 {
+  margin: 0 0 12px;
+  font-size: 48px;
+}
+
+.hero-section p {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #d7b77e;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.intro-section {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 36px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #e7ded4;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(82, 62, 45, 0.08);
+}
+
+.intro-section h2 {
+  margin: 0 0 12px;
+  color: #3a332d;
+}
+
+.intro-section p {
+  margin: 0;
+  color: #5f554e;
+  line-height: 1.6;
+}
+
+.category-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.category-preview span {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f7f0e8;
+  color: #6d3b2f;
+  font-weight: 700;
+}
+
+.site-footer {
+  padding: 24px 0;
+  border-top: 1px solid #e7ded4;
+  color: #726963;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .header-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .main-nav {
+    flex-wrap: wrap;
+  }
+
+  .hero-section {
+    padding: 32px 24px;
+  }
+
+  .hero-section h1 {
+    font-size: 36px;
+  }
+
+  .intro-section {
+    grid-template-columns: 1fr;
+  }
+}
