@@ -1,54 +1,84 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Product from './components/Product';
+import HomeScreen from './screens/HomeScreen';
+import ProductScreen from './screens/ProductScreen';
+import CartScreen from './screens/CartScreen';
 import products from './utils/productList';
 
 const App = () => {
+  const [favoriteItems, setFavoriteItems] = useState(() => {
+    const storedFavorites = localStorage.getItem('favorites');
+    return storedFavorites ? JSON.parse(storedFavorites) : [];
+  });
+  const [cartItems, setCartItems] = useState(() => {
+    const storedCart = localStorage.getItem('cart');
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
+
+  const toggleFavorite = (product) => {
+    setFavoriteItems((currentItems) => {
+      const updatedItems = currentItems.some((item) => item._id === product._id)
+        ? currentItems.filter((item) => item._id !== product._id)
+        : [...currentItems, product];
+
+      localStorage.setItem('favorites', JSON.stringify(updatedItems));
+      return updatedItems;
+    });
+  };
+
+  const path = window.location.pathname;
+  const productId = path.startsWith('/product/') ? path.split('/').pop() : null;
+  const selectedProduct = products.find((product) => product._id === productId);
+
+  const addToCart = (product) => {
+    setCartItems((currentItems) => {
+      const existItem = currentItems.find((item) => item._id === product._id);
+
+      if (existItem) {
+        const updatedItems = currentItems.map((item) =>
+          item._id === product._id ? { ...item, qty: item.qty + 1 } : item
+        );
+
+        localStorage.setItem('cart', JSON.stringify(updatedItems));
+        return updatedItems;
+      }
+
+      const updatedItems = [...currentItems, { ...product, qty: 1 }];
+      localStorage.setItem('cart', JSON.stringify(updatedItems));
+      return updatedItems;
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCartItems((currentItems) => {
+      const updatedItems = currentItems.filter((item) => item._id !== productId);
+      localStorage.setItem('cart', JSON.stringify(updatedItems));
+      return updatedItems;
+    });
+  };
+
   return (
     <>
-      <Header />
+      <Header favoriteCount={favoriteItems.length} cartCount={cartItems.length} />
       <main className="py-3">
         <div className="container">
-          <section className="hero-section">
-            <div>
-              <p className="eyebrow">Online prodaja nakita</p>
-              <h1>Jewelry Shop</h1>
-              <p>
-                Pregledajte mindjuse, ogrlice, narukvice i poklon setove na
-                jednom mestu.
-              </p>
-            </div>
-          </section>
-
-          <section className="intro-section">
-            <div>
-              <p className="eyebrow">Kolekcija</p>
-              <h2>Nakit za svakodnevne i posebne trenutke</h2>
-              <p>
-                Kolekcija je podeljena na mindjuse, ogrlice, narukvice i
-                elegantne poklon setove.
-              </p>
-            </div>
-            <div className="category-preview">
-              <span>Mindjuse</span>
-              <span>Ogrlice</span>
-              <span>Narukvice</span>
-              <span>Setovi</span>
-            </div>
-          </section>
-
-          <section className="catalog-section">
-            <div className="screen-heading">
-              <p className="eyebrow">Katalog</p>
-              <h2>Najnoviji proizvodi</h2>
-            </div>
-            <div className="product-grid">
-              {products.map((product) => (
-                <Product key={product._id} product={product} />
-              ))}
-            </div>
-          </section>
+          {path === '/cart' ? (
+            <CartScreen cartItems={cartItems} onRemoveFromCart={removeFromCart} />
+          ) : selectedProduct ? (
+            <ProductScreen
+              product={selectedProduct}
+              isFavorite={favoriteItems.some((item) => item._id === selectedProduct._id)}
+              onToggleFavorite={toggleFavorite}
+              onAddToCart={addToCart}
+            />
+          ) : (
+            <HomeScreen
+              products={products}
+              favoriteItems={favoriteItems}
+              onToggleFavorite={toggleFavorite}
+            />
+          )}
         </div>
       </main>
       <Footer />

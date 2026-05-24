@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = () => {
+const Header = ({ favoriteCount, cartCount }) => {
   return (
     <header className="site-header">
       <div className="container header-content">
@@ -9,7 +9,8 @@ const Header = () => {
         </a>
         <nav className="main-nav">
           <a href="/">Pocetna</a>
-          <a href="/cart">Korpa</a>
+          <a href="/#favorites">Favoriti {favoriteCount}</a>
+          <a href="/cart">Korpa {cartCount}</a>
           <a href="/login">Prijava</a>
           <a href="/register">Registracija</a>
         </nav>
