@@ -1,13 +1,20 @@
 import React from 'react';
+import { FaRegStar, FaStar, FaStarHalfAlt } from 'react-icons/fa';
 
 const Rating = ({ value, text }) => {
+  const stars = [1, 2, 3, 4, 5];
+
   return (
     <div className="rating">
-      <span>{value >= 1 ? '★' : '☆'}</span>
-      <span>{value >= 2 ? '★' : '☆'}</span>
-      <span>{value >= 3 ? '★' : '☆'}</span>
-      <span>{value >= 4 ? '★' : '☆'}</span>
-      <span>{value >= 5 ? '★' : '☆'}</span>
+      {stars.map((star) =>
+        value >= star ? (
+          <FaStar key={star} />
+        ) : value >= star - 0.5 ? (
+          <FaStarHalfAlt key={star} />
+        ) : (
+          <FaRegStar key={star} />
+        )
+      )}
       <small>{text}</small>
     </div>
   );

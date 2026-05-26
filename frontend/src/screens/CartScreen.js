@@ -1,7 +1,21 @@
 import React from 'react';
+import { Button, Image, ListGroup } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { removeFromCart } from '../slices/cartSlice';
+import { calculateCartPrices } from '../utils/cartUtils';
 
-const CartScreen = ({ cartItems, onRemoveFromCart }) => {
-  const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+const CartScreen = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
+  const { cartItems } = useSelector((state) => state.cart);
+  const { itemsPrice } = calculateCartPrices(cartItems);
+  const removeFromCartHandler = (productId) => {
+    dispatch(removeFromCart(productId));
+    toast.info('Proizvod je uklonjen iz korpe.');
+  };
 
   return (
     <section className="cart-section">
@@ -14,10 +28,10 @@ const CartScreen = ({ cartItems, onRemoveFromCart }) => {
         <p className="empty-state">Korpa je prazna.</p>
       ) : (
         <>
-          <ul className="cart-list">
+          <ListGroup className="cart-list" as="ul" variant="flush">
             {cartItems.map((item) => (
-              <li key={item._id}>
-                <img src={item.image} alt={item.name} />
+              <ListGroup.Item as="li" key={item._id}>
+                <Image src={item.image} alt={item.name} rounded />
                 <div>
                   <h3>{item.name}</h3>
                   <p>
@@ -25,21 +39,25 @@ const CartScreen = ({ cartItems, onRemoveFromCart }) => {
                   </p>
                 </div>
                 <strong>{(item.price * item.qty).toLocaleString('sr-RS')} RSD</strong>
-                <button type="button" onClick={() => onRemoveFromCart(item._id)}>
+                <Button type="button" onClick={() => removeFromCartHandler(item._id)}>
                   Ukloni
-                </button>
-              </li>
+                </Button>
+              </ListGroup.Item>
             ))}
-          </ul>
+          </ListGroup>
 
           <div className="cart-total">
             <span>Ukupno</span>
-            <strong>{totalPrice.toLocaleString('sr-RS')} RSD</strong>
+            <strong>{Number(itemsPrice).toLocaleString('sr-RS')} RSD</strong>
           </div>
 
-          <button className="primary-button" type="button">
+          <Button
+            className="primary-button"
+            type="button"
+            onClick={() => navigate(userInfo ? '/shipping' : '/login')}
+          >
             Nastavi porudzbinu
-          </button>
+          </Button>
         </>
       )}
     </section>

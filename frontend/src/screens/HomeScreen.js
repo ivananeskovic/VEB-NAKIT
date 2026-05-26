@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Button, Col, ListGroup, Row } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
 import Product from '../components/Product';
+import { toggleFavorite } from '../slices/favoriteSlice';
 
-const HomeScreen = ({ products, favoriteItems, onToggleFavorite }) => {
+const HomeScreen = () => {
+  const dispatch = useDispatch();
+  const { products } = useSelector((state) => state.products);
+  const { favoriteItems } = useSelector((state) => state.favorites);
+  const categories = ['Sve', 'Mindjuse', 'Ogrlice', 'Narukvice', 'Setovi'];
+  const [selectedCategory, setSelectedCategory] = useState('Sve');
+  const filteredProducts =
+    selectedCategory === 'Sve'
+      ? products
+      : products.filter((product) => product.category === selectedCategory);
+
   return (
     <>
       <section className="hero-section">
@@ -25,28 +38,35 @@ const HomeScreen = ({ products, favoriteItems, onToggleFavorite }) => {
           </p>
         </div>
         <div className="category-preview">
-          <span>Mindjuse</span>
-          <span>Ogrlice</span>
-          <span>Narukvice</span>
-          <span>Setovi</span>
+          {categories.map((category) => (
+            <Button
+              className={selectedCategory === category ? 'active' : ''}
+              key={category}
+              type="button"
+              onClick={() => setSelectedCategory(category)}
+            >
+              {category}
+            </Button>
+          ))}
         </div>
       </section>
 
       <section className="catalog-section">
         <div className="screen-heading">
           <p className="eyebrow">Katalog</p>
-          <h2>Najnoviji proizvodi</h2>
+          <h2>{selectedCategory === 'Sve' ? 'Najnoviji proizvodi' : selectedCategory}</h2>
         </div>
-        <div className="product-grid">
-          {products.map((product) => (
-            <Product
-              key={product._id}
-              product={product}
-              isFavorite={favoriteItems.some((item) => item._id === product._id)}
-              onToggleFavorite={onToggleFavorite}
-            />
+        <Row className="g-4">
+          {filteredProducts.map((product) => (
+            <Col key={product._id} sm={12} md={6} lg={4}>
+              <Product
+                product={product}
+                isFavorite={favoriteItems.some((item) => item._id === product._id)}
+                onToggleFavorite={(item) => dispatch(toggleFavorite(item))}
+              />
+            </Col>
           ))}
-        </div>
+        </Row>
       </section>
 
       <section className="favorites-section" id="favorites">
@@ -57,14 +77,14 @@ const HomeScreen = ({ products, favoriteItems, onToggleFavorite }) => {
         {favoriteItems.length === 0 ? (
           <p className="empty-state">Niste dodali nijedan proizvod u favorite.</p>
         ) : (
-          <ul className="favorite-list">
+          <ListGroup className="favorite-list" as="ul" variant="flush">
             {favoriteItems.map((product) => (
-              <li key={product._id}>
+              <ListGroup.Item as="li" key={product._id}>
                 <span>{product.name}</span>
                 <strong>{product.price.toLocaleString('sr-RS')} RSD</strong>
-              </li>
+              </ListGroup.Item>
             ))}
-          </ul>
+          </ListGroup>
         )}
       </section>
     </>

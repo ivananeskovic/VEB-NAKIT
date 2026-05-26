@@ -1,45 +1,76 @@
 import React from 'react';
+import { Button, Col, Image, ListGroup, Row } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Rating from '../components/Rating';
+import { addToCart } from '../slices/cartSlice';
+import { toggleFavorite } from '../slices/favoriteSlice';
 
-const ProductScreen = ({ product, isFavorite, onToggleFavorite, onAddToCart }) => {
+const ProductScreen = () => {
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const { favoriteItems } = useSelector((state) => state.favorites);
+  const { products } = useSelector((state) => state.products);
+  const product = products.find((item) => item._id === id);
+
+  if (!product) {
+    return <p className="empty-state">Proizvod nije pronadjen.</p>;
+  }
+
+  const isFavorite = favoriteItems.some((item) => item._id === product._id);
+  const toggleFavoriteHandler = () => {
+    dispatch(toggleFavorite(product));
+    toast.info(isFavorite ? 'Proizvod je uklonjen iz favorita.' : 'Proizvod je dodat u favorite.');
+  };
+  const addToCartHandler = () => {
+    dispatch(addToCart(product));
+    toast.success('Proizvod je dodat u korpu.');
+  };
+
   return (
     <>
-      <a className="back-link" href="/">
+      <Link className="back-link" to="/">
         Nazad
-      </a>
-      <section className="product-details">
-        <img src={product.image} alt={product.name} />
-        <div>
+      </Link>
+      <Row className="product-details">
+        <Col md={6}>
+          <Image src={product.image} alt={product.name} fluid rounded />
+        </Col>
+        <Col md={6}>
           <p className="eyebrow">{product.category}</p>
           <h1>{product.name}</h1>
-          <Rating value={product.rating} text={`${product.numReviews} recenzija`} />
-          <p>{product.description}</p>
-          <p>
-            <strong>Cena:</strong> {product.price.toLocaleString('sr-RS')} RSD
-          </p>
-          <p>
-            <strong>Status:</strong>{' '}
-            {product.countInStock > 0 ? 'Na stanju' : 'Nema na stanju'}
-          </p>
+          <ListGroup variant="flush">
+            <ListGroup.Item>
+              <Rating value={product.rating} text={`${product.numReviews} recenzija`} />
+            </ListGroup.Item>
+            <ListGroup.Item>{product.description}</ListGroup.Item>
+            <ListGroup.Item>
+              <strong>Cena:</strong> {product.price.toLocaleString('sr-RS')} RSD
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <strong>Status:</strong> {product.countInStock > 0 ? 'Na stanju' : 'Nema na stanju'}
+            </ListGroup.Item>
+          </ListGroup>
           <div className="detail-actions">
-            <button
+            <Button
               className={isFavorite ? 'secondary-button active' : 'secondary-button'}
               type="button"
-              onClick={() => onToggleFavorite(product)}
+              onClick={toggleFavoriteHandler}
             >
               {isFavorite ? 'U favoritima' : 'Dodaj u favorite'}
-            </button>
-            <button
+            </Button>
+            <Button
               className="primary-button"
               type="button"
-              onClick={() => onAddToCart(product)}
+              onClick={addToCartHandler}
               disabled={product.countInStock === 0}
             >
               Dodaj u korpu
-            </button>
+            </Button>
           </div>
-        </div>
-      </section>
+        </Col>
+      </Row>
     </>
   );
 };
