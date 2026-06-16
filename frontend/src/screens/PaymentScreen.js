@@ -17,7 +17,7 @@ const PaymentScreen = () => {
     toast.success('Nacin placanja je sacuvan.');
     navigate('/placeorder');
   };
-  const paymentOptions = ['Pouzecem', 'Karticom'];
+  const paymentOptions = ['PayPal', 'Pouzecem', 'Karticom'];
 
   return (
     <section className="form-screen">
@@ -29,7 +29,13 @@ const PaymentScreen = () => {
             className="mb-2"
             id={option}
             key={option}
-            label={option === 'Pouzecem' ? 'Placanje pouzecem' : 'Platna kartica'}
+            label={
+              option === 'PayPal'
+                ? 'PayPal'
+                : option === 'Pouzecem'
+                  ? 'Placanje pouzecem'
+                  : 'Platna kartica'
+            }
             name="paymentMethod"
             onChange={(e) => setMethod(e.target.value)}
             type="radio"

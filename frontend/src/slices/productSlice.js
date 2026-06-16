@@ -5,8 +5,19 @@ const storedProducts = localStorage.getItem('products');
 const defaultProductImage =
   'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=900&q=80';
 
+const getInitialProducts = () => {
+  const parsedProducts = storedProducts ? JSON.parse(storedProducts) : null;
+
+  if (Array.isArray(parsedProducts) && parsedProducts.length >= initialProducts.length) {
+    return parsedProducts;
+  }
+
+  localStorage.setItem('products', JSON.stringify(initialProducts));
+  return initialProducts;
+};
+
 const initialState = {
-  products: storedProducts ? JSON.parse(storedProducts) : initialProducts,
+  products: getInitialProducts(),
 };
 
 const saveProductsToStorage = (products) => {

@@ -3,7 +3,8 @@ import { Button, Form } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { login } from '../slices/authSlice';
+import { setCredentials } from '../slices/authSlice';
+import { useRegisterMutation } from '../slices/usersApiSlice';
 
 const RegisterScreen = () => {
   const dispatch = useDispatch();
@@ -11,21 +12,23 @@ const RegisterScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [register, { isLoading }] = useRegisterMutation();
   const fields = [
     { controlId: 'name', label: 'Ime', type: 'text', value: name, setValue: setName },
     { controlId: 'email', label: 'Email adresa', type: 'email', value: email, setValue: setEmail },
     { controlId: 'password', label: 'Lozinka', type: 'password', value: password, setValue: setPassword },
   ];
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (name && email && password) {
-      dispatch(login({ name, email }));
+    try {
+      const res = await register({ name, email, password }).unwrap();
+      dispatch(setCredentials(res));
       toast.success('Uspesno ste se registrovali.');
       navigate('/');
-    } else {
-      toast.error('Popunite sva polja za registraciju.');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Registracija nije uspela.');
     }
   };
 
@@ -44,8 +47,8 @@ const RegisterScreen = () => {
           </Form.Group>
         ))}
 
-        <Button className="primary-button" type="submit">
-          Registruj se
+        <Button className="primary-button" disabled={isLoading} type="submit">
+          {isLoading ? 'Registracija...' : 'Registruj se'}
         </Button>
       </Form>
       <p>

@@ -3,11 +3,14 @@ import { Button, Col, ListGroup, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import Product from '../components/Product';
 import { toggleFavorite } from '../slices/favoriteSlice';
+import { useGetProductsQuery } from '../slices/productApiSlice';
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-  const { products } = useSelector((state) => state.products);
+  const { products: localProducts } = useSelector((state) => state.products);
   const { favoriteItems } = useSelector((state) => state.favorites);
+  const { data: apiProducts, isLoading, error } = useGetProductsQuery();
+  const products = apiProducts || localProducts;
   const categories = ['Sve', 'Mindjuse', 'Ogrlice', 'Narukvice', 'Setovi'];
   const [selectedCategory, setSelectedCategory] = useState('Sve');
   const filteredProducts =
@@ -56,6 +59,8 @@ const HomeScreen = () => {
           <p className="eyebrow">Katalog</p>
           <h2>{selectedCategory === 'Sve' ? 'Najnoviji proizvodi' : selectedCategory}</h2>
         </div>
+        {isLoading && <p className="empty-state">Ucitavanje proizvoda...</p>}
+        {error && <p className="empty-state">Proizvodi trenutno nisu dostupni.</p>}
         <Row className="g-4">
           {filteredProducts.map((product) => (
             <Col key={product._id} sm={12} md={6} lg={4}>

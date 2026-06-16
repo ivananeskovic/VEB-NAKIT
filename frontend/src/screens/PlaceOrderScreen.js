@@ -4,18 +4,35 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { clearCartItems } from '../slices/cartSlice';
+import { useCreateOrderMutation } from '../slices/orderApiSlice';
 import { calculateCartPrices } from '../utils/cartUtils';
 
 const PlaceOrderScreen = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { cartItems, paymentMethod, shippingAddress } = useSelector((state) => state.cart);
-  const placeOrder = () => {
-    dispatch(clearCartItems());
-    toast.success('Porudzbina je uspesno potvrdjena.');
-    navigate('/');
-  };
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
   const { itemsPrice, shippingPrice, taxPrice, totalPrice } = calculateCartPrices(cartItems);
+
+  const placeOrder = async () => {
+    try {
+      const res = await createOrder({
+        orderItems: cartItems,
+        shippingAddress,
+        paymentMethod,
+        itemsPrice,
+        shippingPrice,
+        totalPrice,
+        taxPrice,
+      }).unwrap();
+
+      dispatch(clearCartItems());
+      toast.success('Porudzbina je uspesno kreirana.');
+      navigate(`/order/${res._id}`);
+    } catch (err) {
+      toast.error(err?.data?.message || 'Porudzbina nije kreirana.');
+    }
+  };
   const summaryItems = [
     ['Proizvodi', itemsPrice],
     ['Dostava', shippingPrice],
@@ -79,11 +96,11 @@ const PlaceOrderScreen = () => {
             ))}
             <Button
               className="primary-button order-button"
-              disabled={cartItems.length === 0}
+              disabled={cartItems.length === 0 || isLoading}
               type="button"
               onClick={placeOrder}
             >
-              Potvrdi porudzbinu
+              {isLoading ? 'Kreiranje...' : 'Potvrdi porudzbinu'}
             </Button>
           </Card.Body>
         </Card>

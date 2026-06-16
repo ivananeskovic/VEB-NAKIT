@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 import { toast } from 'react-toastify';
 import { logout, selectIsAdminUser, selectUserInfo } from '../slices/authSlice';
+import { useLogoutMutation } from '../slices/usersApiSlice';
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -14,10 +15,17 @@ const Header = () => {
   const isAdminUser = useSelector(selectIsAdminUser);
   const { cartItems } = useSelector((state) => state.cart);
   const { favoriteItems } = useSelector((state) => state.favorites);
+  const [logoutApiCall] = useLogoutMutation();
   const userName = userInfo?.name
     ? userInfo.name.charAt(0).toUpperCase() + userInfo.name.slice(1)
     : '';
-  const logoutUser = () => {
+  const logoutUser = async () => {
+    try {
+      await logoutApiCall().unwrap();
+    } catch (err) {
+      toast.error(err?.data?.message || 'Odjava nije uspela.');
+    }
+
     dispatch(logout());
     toast.info('Uspesno ste se odjavili.');
     navigate('/');

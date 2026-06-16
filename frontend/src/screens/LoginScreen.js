@@ -3,23 +3,26 @@ import { Button, Form } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { login } from '../slices/authSlice';
+import { setCredentials } from '../slices/authSlice';
+import { useLoginMutation } from '../slices/usersApiSlice';
 
 const LoginScreen = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [login, { isLoading }] = useLoginMutation();
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (email && password) {
-      dispatch(login({ email }));
+    try {
+      const res = await login({ email, password }).unwrap();
+      dispatch(setCredentials(res));
       toast.success('Uspesno ste se prijavili.');
       navigate('/');
-    } else {
-      toast.error('Unesite email i lozinku.');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Prijava nije uspela.');
     }
   };
 
@@ -41,8 +44,8 @@ const LoginScreen = () => {
           />
         </Form.Group>
 
-        <Button className="primary-button" type="submit">
-          Prijavi se
+        <Button className="primary-button" disabled={isLoading} type="submit">
+          {isLoading ? 'Prijava...' : 'Prijavi se'}
         </Button>
       </Form>
       <p>

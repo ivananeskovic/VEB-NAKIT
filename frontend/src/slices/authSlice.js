@@ -6,14 +6,15 @@ const initialState = {
   userInfo: storedUser ? JSON.parse(storedUser) : null,
 };
 
-const createUserInfo = ({ name, email }) => {
+const createUserInfo = ({ name, email, _id, isAdmin }) => {
   const fallbackName = email.split('@')[0];
   const displayName = name || fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
 
   return {
+    _id,
     name: displayName,
     email,
-    isAdmin: email.toLowerCase() === 'admin@jewelry.com',
+    isAdmin: Boolean(isAdmin) || email.toLowerCase() === 'admin@jewelry.com',
   };
 };
 
@@ -21,7 +22,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login: (state, action) => {
+    setCredentials: (state, action) => {
       state.userInfo = createUserInfo(action.payload);
       localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
     },
@@ -44,6 +45,6 @@ export const selectIsAdminUser = (state) => {
   );
 };
 
-export const { login, logout } = authSlice.actions;
+export const { logout, setCredentials } = authSlice.actions;
 
 export default authSlice.reducer;

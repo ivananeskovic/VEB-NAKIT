@@ -6,13 +6,23 @@ import { toast } from 'react-toastify';
 import Rating from '../components/Rating';
 import { addToCart } from '../slices/cartSlice';
 import { toggleFavorite } from '../slices/favoriteSlice';
+import { useGetProductDetailsQuery } from '../slices/productApiSlice';
 
 const ProductScreen = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const { favoriteItems } = useSelector((state) => state.favorites);
   const { products } = useSelector((state) => state.products);
-  const product = products.find((item) => item._id === id);
+  const { data: apiProduct, isLoading, error } = useGetProductDetailsQuery(id);
+  const product = apiProduct || products.find((item) => item._id === id);
+
+  if (isLoading) {
+    return <p className="empty-state">Ucitavanje proizvoda...</p>;
+  }
+
+  if (error) {
+    return <p className="empty-state">Proizvod trenutno nije dostupan.</p>;
+  }
 
   if (!product) {
     return <p className="empty-state">Proizvod nije pronadjen.</p>;
