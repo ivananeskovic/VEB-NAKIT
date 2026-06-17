@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { Button, Form, ListGroup } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { selectIsAdminUser, selectUserInfo } from '../slices/authSlice';
-import { addAdminProduct, removeAdminProduct, updateAdminProduct } from '../slices/productSlice';
+import {
+  useCreateProductMutation,
+  useDeleteProductMutation,
+  useGetProductsQuery,
+  useUpdateProductMutation,
+} from '../slices/productApiSlice';
 
 const adminProductCategories = ['Mindjuse', 'Ogrlice', 'Narukvice', 'Setovi'];
 
@@ -36,14 +41,17 @@ const createProductFormData = (product) => ({
 });
 
 const ProductListScreen = () => {
-  const dispatch = useDispatch();
   const userInfo = useSelector(selectUserInfo);
   const isAdminUser = useSelector(selectIsAdminUser);
-  const { products } = useSelector((state) => state.products);
+  const { data: products = [], isLoading, error } = useGetProductsQuery();
+  const [createProduct, { isLoading: loadingCreate }] = useCreateProductMutation();
+  const [updateProduct, { isLoading: loadingUpdate }] = useUpdateProductMutation();
+  const [deleteProduct, { isLoading: loadingDelete }] = useDeleteProductMutation();
   const [formData, setFormData] = useState(emptyAdminProductForm);
   const [editingProductId, setEditingProductId] = useState(null);
   const canManageProducts = Boolean(userInfo && isAdminUser);
   const isEditing = Boolean(editingProductId);
+  const isSaving = loadingCreate || loadingUpdate;
   const setField = (name, value) => setFormData({ ...formData, [name]: value });
 
   const resetForm = () => {
@@ -56,7 +64,7 @@ const ProductListScreen = () => {
     setEditingProductId(product._id);
   };
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
 
     if (!canManageProducts) {
@@ -68,24 +76,39 @@ const ProductListScreen = () => {
       return;
     }
 
-    if (isEditing) {
-      dispatch(updateAdminProduct({ ...formData, _id: editingProductId }));
-      toast.success('Proizvod je izmenjen.');
-    } else {
-      dispatch(addAdminProduct(formData));
-      toast.success('Proizvod je dodat.');
-    }
+    const productPayload = {
+      ...formData,
+      price: Number(formData.price),
+      countInStock: Number(formData.countInStock),
+      brand: 'Veb Nakit',
+    };
 
-    resetForm();
+    try {
+      if (isEditing) {
+        await updateProduct({ ...productPayload, _id: editingProductId }).unwrap();
+        toast.success('Proizvod je izmenjen.');
+      } else {
+        await createProduct(productPayload).unwrap();
+        toast.success('Proizvod je dodat.');
+      }
+
+      resetForm();
+    } catch (err) {
+      toast.error(err?.data?.message || 'Izmena proizvoda nije uspela.');
+    }
   };
 
-  const deleteHandler = (productId) => {
+  const deleteHandler = async (productId) => {
     if (!canManageProducts) {
       return;
     }
 
-    dispatch(removeAdminProduct(productId));
-    toast.info('Proizvod je obrisan.');
+    try {
+      await deleteProduct(productId).unwrap();
+      toast.info('Proizvod je obrisan.');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Brisanje proizvoda nije uspelo.');
+    }
   };
 
   if (!canManageProducts) {
@@ -130,7 +153,7 @@ const ProductListScreen = () => {
             placeholder="Opis"
           />
           <Button className="primary-button" type="submit">
-            {isEditing ? 'Sacuvaj izmene' : 'Dodaj proizvod'}
+            {isSaving ? 'Cuvanje...' : isEditing ? 'Sacuvaj izmene' : 'Dodaj proizvod'}
           </Button>
           {isEditing && (
             <Button className="secondary-button admin-cancel-button" type="button" onClick={resetForm}>
@@ -140,6 +163,8 @@ const ProductListScreen = () => {
         </Form>
 
         <ListGroup className="admin-list" as="ul" variant="flush">
+          {isLoading && <p className="empty-state">Ucitavanje proizvoda...</p>}
+          {error && <p className="empty-state">Proizvodi trenutno nisu dostupni.</p>}
           {products.map((product) => (
             <ListGroup.Item as="li" key={product._id}>
               <span>
@@ -150,7 +175,7 @@ const ProductListScreen = () => {
                 <Button type="button" onClick={() => startEditing(product)}>
                   Izmeni
                 </Button>
-                <Button type="button" onClick={() => deleteHandler(product._id)}>
+                <Button disabled={loadingDelete} type="button" onClick={() => deleteHandler(product._id)}>
                   Ukloni
                 </Button>
               </div>
